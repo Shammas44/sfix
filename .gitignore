@@ -1,0 +1,7 @@
+.cache
+*.o
+core
+bin/*
+compile_commands.json
+log.txt
+lib
