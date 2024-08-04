@@ -248,7 +248,7 @@ static void __print(T *self, char *message) {
 static char *__acknowledge(T *self) {
   /*#region*/
   (void)self;
-  SFIX_Pair pairs[] = {};
+  SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
   return __compose(self, 'A', pairs, sizeof(pairs) / sizeof(pairs[0]));
   /*#endregion*/
 }
@@ -256,7 +256,7 @@ static char *__acknowledge(T *self) {
 static char *__unknown(T *self) {
   /*#region*/
   (void)self;
-  SFIX_Pair pairs[] = {};
+  SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
   return __compose(self, 'U', pairs, sizeof(pairs) / sizeof(pairs[0]));
   /*#endregion*/
 }
