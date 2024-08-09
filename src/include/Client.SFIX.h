@@ -1,6 +1,5 @@
 #ifndef CLIENT_SFIX_H
 #define CLIENT_SFIX_H
-#include "MessageType.SFIX.h"
 #include "Tag.SFIX.h"
 
 #define T SFIX_Client
@@ -22,15 +21,16 @@ typedef struct {
 } SFIX_KeyValue;
 
 struct T {
-  char *(*compose)(T *self, char type, SFIX_Pair pairs[], int pairsLength);
+  char *(*compose)(T *self, char type, SFIX_Pair pairs[], int pairsLength, int *out_length);
   void (*destructor)(T *self);
   char *(*composeInnerMessage)(T *self, int message_id, SFIX_Pair pairs[], int pairsLength);
   char *(*concatInnerMessages)(T *self, char *pairs[], int length);
   int (*isList)(T *self, char *message);
   int (*parse)(T *self, char *message, SFIX_KeyValue *out);
   void (*print)(T *self, char *message);
-  char *(*acknowledge)(T *self);
-  char *(*unknown)(T *self);
+  char *(*acknowledge)(T *self, int *out_length);
+  char *(*unknown)(T *self, int *out_length);
+  int (*estimateMessageSize)(T*self, int pairsLength);
 };
 
 T *SFIX_client_constructor();
