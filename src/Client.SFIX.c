@@ -8,69 +8,17 @@
 #define SOH "\001" // Regular tag delimiter
 #define STX "\002" // Inner tag delimiter
 #define ETX "\003" // Inner message delimiter
-#define T SFIX_Client
 #define PROTOCOL "SFIX.1"
 
-static int __append_tag(char *buffer, int tag, const char *value,
+static int _$append_tag(char *buffer, int tag, const char *value,
                         char delimiter[2]);
-static int __body_length(char *fix_message);
-static int __checksum(char *fix_message);
-static char *__compose(T *self, char type, SFIX_Pair pairs[], int pairsLength,
-                       int *out_length);
-static char *__composeInnerMessage(T *self, int message_id, SFIX_Pair pairs[],
-                                   int pairsLength);
-static char *__concatInnerMessages(T *self, char *pairs[], int length);
-static int __parse(T *self, char *message, SFIX_KeyValue *out);
-static void __print(T *self, char *message);
-static char *__acknowledge(T *self, int *out_length);
-static char *__unknown(T *self, int *out_length);
-static int _$parse(T *self, char *message, SFIX_KeyValue out[SFIX_TAGSNUM],
-                   char *separator);
+static int _$body_length(char *fix_message);
+static int _$checksum(char *fix_message);
+static int _$count_digits(int num);
+static int _$parse(char *message, SFIX_KeyValue out[SFIX_TAGSNUM], char *sep);
+static void _$remplace(int value, char *message, int tag);
 
-static int __count_digits(int num);
-static int __isList(T *self, char *message);
-static void __remplace(int value, char *message, int tag);
-static void __destructor(T *self);
-static int __estimateMessageSize(T *self, int pairsLength);
-
-T *SFIX_client_constructor() {
-  /*#region*/
-  T *self = malloc(sizeof(T));
-  if (!self) {
-    perror("malloc");
-    return NULL;
-  }
-  self->parse = __parse;
-  self->destructor = __destructor;
-  self->compose = __compose;
-  self->print = __print;
-  self->acknowledge = __acknowledge;
-  self->unknown = __unknown;
-  self->composeInnerMessage = __composeInnerMessage;
-  self->concatInnerMessages = __concatInnerMessages;
-  self->isList = __isList;
-  self->estimateMessageSize = __estimateMessageSize;
-  return self;
-  /*#endregion*/
-}
-
-static void __destructor(T *self) {
-  /*#region*/
-  free(self);
-  /*#endregion*/
-}
-
-static int __estimateMessageSize(T *self, int pairsLength) {
-  /*#region*/
-  (void)self;
-  // +2 for (=,EOF)
-  int singlePairSize = SFIX_MAX_TAG_LEN + SFIX_MAX_VALUE_LEN + 2;
-  // +1 for EOL
-  return pairsLength * singlePairSize + 1;
-  /*#endregion*/
-}
-
-static int __append_tag(char *buffer, int tag, const char *value,
+static int _$append_tag(char *buffer, int tag, const char *value,
                         char delimiter[2]) {
   /*#region*/
   char temp[SFIX_TAGSNUM];
@@ -85,7 +33,7 @@ static int __append_tag(char *buffer, int tag, const char *value,
   /*#endregion*/
 }
 
-static int __body_length(char *fix_message) {
+static int _$body_length(char *fix_message) {
   /*#region*/
   char *body_start = strstr(fix_message, "35=") + 5; // Start of Body
   int body_length = strlen(body_start);
@@ -93,7 +41,7 @@ static int __body_length(char *fix_message) {
   /*#endregion*/
 }
 
-static int __checksum(char *fix_message) {
+static int _$checksum(char *fix_message) {
   /*#region*/
   int checksum = 0;
   for (char *p = fix_message; *p; p++) {
@@ -104,7 +52,7 @@ static int __checksum(char *fix_message) {
   /*#endregion*/
 }
 
-static int __count_digits(int num) {
+static int _$count_digits(int num) {
   /*#region*/
   int count = 0;
   // Handle negative numbers
@@ -123,98 +71,119 @@ static int __count_digits(int num) {
   /*#endregion*/
 }
 
-static char *__compose(T *self, char type, SFIX_Pair pairs[], int pairsLength,
-                       int *out_length) {
+static int _$parse(char *message, SFIX_KeyValue out[SFIX_TAGSNUM], char *sep) {
   /*#region*/
-  (void)(self);
-  int msg_size = 0;
-  // TODO: allocate memory on the stack instead
-  char *fix_message = malloc(sizeof(char) * 1024);
-  memset(fix_message, 0, sizeof(char) * 1024);
-  msg_size += __append_tag(fix_message, 8, PROTOCOL, SOH);
-  // Body Length (placeholder, will be replaced later)
-  msg_size += __append_tag(fix_message, 9, "000", SOH);
-
-  char temp[6];
-  msg_size += snprintf(temp, sizeof(temp), "35=%c%s", type, SOH);
-  strcat(fix_message, temp);
-
-  for (int i = 0; i < pairsLength; i++) {
-    SFIX_Pair p = pairs[i];
-    msg_size += __append_tag(fix_message, p.key, p.value, SOH);
+  char *msg_copy = strdup(message);
+  if (!msg_copy) {
+    perror("strdup failed");
+    return 1;
   }
-  // CheckSum (placeholder, will be replaced later)
-  msg_size += __append_tag(fix_message, 10, "000", SOH);
-  msg_size++; // count null-terminate char
 
-  int body_length = __body_length(fix_message);
-  __remplace(body_length, fix_message, 9);
-
-  int checksum = __checksum(fix_message);
-  __remplace(checksum, fix_message, 10);
-
-  *out_length = msg_size;
-  return fix_message;
+  char *token = strtok(msg_copy, sep);
+  while (token) {
+    char *separator = strchr(token, '=');
+    if (separator) {
+      *separator = '\0'; // Split tag and value
+      int num = atoi(token);
+      strncpy(out[num].tag, token, SFIX_MAX_TAG_LEN - 1);
+      out[num].tag[SFIX_MAX_TAG_LEN - 1] = '\0';
+      strncpy(out[num].value, separator + 1, SFIX_MAX_VALUE_LEN - 1);
+      out[num].value[SFIX_MAX_VALUE_LEN - 1] = '\0';
+    }
+    token = strtok(NULL, sep);
+  }
+  free(msg_copy); // Free the duplicated message
+  return 0;
   /*#endregion*/
 }
 
-static char *__composeInnerMessage(T *self, int message_id, SFIX_Pair pairs[],
-                                   int pairsLength) {
-  /*#region*/
-  (void)(self);
-  char fix_message[1024] = {0};
-  char out[1024] = {0};
-  for (int i = 0; i < pairsLength; i++) {
-    SFIX_Pair p = pairs[i];
-    __append_tag(fix_message, p.key, p.value, STX);
-  }
-  __append_tag(out, message_id, fix_message, ETX);
-  return strdup(out);
-  /*#endregion*/
-}
-
-static char *__concatInnerMessages(T *self, char *pairs[], int length) {
-  /*#region*/
-  (void)(self);
-  char fix_message[1024] = {0};
-  for (int i = 0; i < length; i++) {
-    char *p = pairs[i];
-    char temp[SFIX_TAGSNUM];
-    snprintf(temp, sizeof(temp), "%s", p);
-    strcat(fix_message, temp);
-  }
-  return strdup(fix_message);
-  /*#endregion*/
-}
-
-static void __remplace(int value, char *message, int tag) {
+static void _$remplace(int value, char *message, int tag) {
   /*#region*/
   char str[16];
   snprintf(str, sizeof(str), "%03d", value);
   char template[7];
   sprintf(template, "%d=000", tag);
-  char *position = strstr(message, template) + __count_digits(tag) + 1;
+  char *position = strstr(message, template) + _$count_digits(tag) + 1;
   memcpy(position, str, strlen(str));
   /*#endregion*/
 }
 
-static int __parse(T *self, char *message, SFIX_KeyValue *out) {
+int SFIX_estimateMessageSize(SFIX_Pair body[], int length) {
   /*#region*/
-  puts("here");
+  int size = 0;
+  for (int i = 0; i < length; i++) {
+    // +2 for (=,EOF)
+    size += strlen(body[i].value) + SFIX_MAX_TAG_LEN + 2;
+  }
+  // +2 for (=,EOF); *4 for protocol, type, body_length,checksum
+  int regularPairSize = (SFIX_MAX_TAG_LEN + SFIX_MAX_VALUE_LEN + 2) * 4;
+  // +1 for EOL
+  return size + regularPairSize + 1;
+  /*#endregion*/
+}
+
+int SFIX_compose(char *out, char type, SFIX_Pair pairs[], int pairsLength) {
+  /*#region*/
+  int msg_size = 0;
+  // TODO: allocate memory on the stack instead
+  msg_size += _$append_tag(out, 8, PROTOCOL, SOH);
+  // Body Length (placeholder, will be replaced later)
+  msg_size += _$append_tag(out, 9, "000", SOH);
+
+  char temp[6];
+  msg_size += snprintf(temp, sizeof(temp), "35=%c%s", type, SOH);
+  strcat(out, temp);
+
+  for (int i = 0; i < pairsLength; i++) {
+    SFIX_Pair p = pairs[i];
+    msg_size += _$append_tag(out, p.key, p.value, SOH);
+  }
+  // CheckSum (placeholder, will be replaced later)
+  msg_size += _$append_tag(out, 10, "000", SOH);
+  msg_size++; // count null-terminate char
+
+  int body_length = _$body_length(out);
+  _$remplace(body_length, out, 9);
+
+  int checksum = _$checksum(out);
+  _$remplace(checksum, out, 10);
+  return msg_size;
+  /*#endregion*/
+}
+
+int SFIX_composeInnerMessage(char *out, int rows, int cols, SFIX_Pair pairs[]) {
+  /*#region*/
+  int size = 0;
+  for (int i = 0; i < rows; i++) {
+    char id[4];
+    sprintf(id, "%d=", i);
+    strcat(out, id);
+    for (int j = 0; j < cols; j++) {
+      int index = i * cols + j;
+      SFIX_Pair p = pairs[index];
+      size += _$append_tag(out, p.key, p.value, STX);
+    }
+    strcat(out, ETX);
+  }
+  return size + 1;
+  /*#endregion*/
+}
+
+int SFIX_parse(char *message, SFIX_KeyValue *out) {
+  /*#region*/
   int e = 0;
-  int list_len = __isList(self, message);
-  e = _$parse(self, message, out, SOH);
+  int list_len = SFIX_isList(message);
+  e = _$parse(message, out, SOH);
+
   if (e) {
-    puts("here1");
     return 1;
   }
 
   if (list_len > 1) {
     char *list = out[SFIX_Tag_List].value;
     SFIX_KeyValue messages[SFIX_TAGSNUM] = {0};
-    e = _$parse(self, list, messages, ETX);
+    e = _$parse(list, messages, ETX);
     if (e) {
-      puts("here2");
       return 1;
     }
 
@@ -222,24 +191,18 @@ static int __parse(T *self, char *message, SFIX_KeyValue *out) {
       char *innerMessage = messages[i].value;
       int index = (256 * i);
       out += index;
-      e = _$parse(self, innerMessage, out, STX);
+      e = _$parse(innerMessage, out, STX);
       if (e) {
-        puts("here3");
         return 1;
       }
     }
-  } else {
-    puts("here4");
-    return 0;
   }
-  puts("here5");
   return 0;
   /*#endregion*/
 }
 
-static int __isList(T *self, char *message) {
+int SFIX_isList(char *message) {
   /*#region*/
-  (void)self;
   const char search[] = "\x01"
                         "20=";
   char *p = strstr(message, search);
@@ -267,9 +230,8 @@ static int __isList(T *self, char *message) {
   /*#endregion*/
 }
 
-static void __print(T *self, char *message) {
+void SFIX_print(char *message) {
   /*#region*/
-  (void)(self);
   size_t length = strlen(message);
   char buffer[length + 1]; // +1 for the null terminator
   for (size_t i = 0; i < length; i++) {
@@ -284,50 +246,16 @@ static void __print(T *self, char *message) {
   /*#endregion*/
 }
 
-static char *__acknowledge(T *self, int *out_length) {
+int SFIX_acknowledge(char out[83]) {
   /*#region*/
   SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
-  int length;
-  char *msg = __compose(self, 'a', pairs, 0, &length);
-  *out_length = length;
-  return msg;
+  return SFIX_compose(out, 'a', pairs, 0);
   /*#endregion*/
 }
 
-static char *__unknown(T *self, int *out_length) {
+int SFIX_unknown(char out[83]) {
   /*#region*/
   SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
-  int length;
-  char *msg = __compose(self, 'u', pairs, 0, &length);
-  *out_length = length;
-  return msg;
-  /*#endregion*/
-}
-
-static int _$parse(T *self, char *message, SFIX_KeyValue out[SFIX_TAGSNUM],
-                   char *sep) {
-  /*#region*/
-  (void)(self);
-  char *msg_copy = strdup(message);
-  if (!msg_copy) {
-    perror("strdup failed");
-    return 1;
-  }
-
-  char *token = strtok(msg_copy, sep);
-  while (token) {
-    char *separator = strchr(token, '=');
-    if (separator) {
-      *separator = '\0'; // Split tag and value
-      int num = atoi(token);
-      strncpy(out[num].tag, token, SFIX_MAX_TAG_LEN - 1);
-      out[num].tag[SFIX_MAX_TAG_LEN - 1] = '\0';
-      strncpy(out[num].value, separator + 1, SFIX_MAX_VALUE_LEN - 1);
-      out[num].value[SFIX_MAX_VALUE_LEN - 1] = '\0';
-    }
-    token = strtok(NULL, sep);
-  }
-  free(msg_copy); // Free the duplicated message
-  return 0;
+  return SFIX_compose(out, 'u', pairs, 0);
   /*#endregion*/
 }
