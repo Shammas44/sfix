@@ -179,7 +179,7 @@ int SFIX_parse(char *message, SFIX_KeyValue *out) {
     return 1;
   }
 
-  if (list_len > 1) {
+  if (list_len >= 1) {
     char *list = out[SFIX_Tag_List].value;
     SFIX_KeyValue messages[SFIX_TAGSNUM] = {0};
     e = _$parse(list, messages, ETX);
@@ -249,13 +249,13 @@ void SFIX_print(char *message) {
 int SFIX_acknowledge(char out[83]) {
   /*#region*/
   SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
-  return SFIX_compose(out, 'a', pairs, 0);
+  return SFIX_compose(out, 'A', pairs, 0);
   /*#endregion*/
 }
 
 int SFIX_unknown(char out[83]) {
   /*#region*/
   SFIX_Pair pairs[SFIX_TAGSNUM] = {0};
-  return SFIX_compose(out, 'u', pairs, 0);
+  return SFIX_compose(out, 'U', pairs, 0);
   /*#endregion*/
 }
