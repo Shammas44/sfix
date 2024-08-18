@@ -105,7 +105,8 @@ shared: lib$(LIB_NAME).so
 
 # Rule to build shared library
 lib$(LIB_NAME).so: $(LIB_OBJS)
-	$(CC) -shared -o $(BIN_DIR)/$@ $^
+	$(CC) -shared -o /usr/local/lib/$@ $^
+	cp -R ./src/include /usr/local/include/$(LIB_NAME)
 
 # Rule to build library object files
 %.o: %.c
