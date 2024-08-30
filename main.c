@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PROPERTY_LENGTH 8
+
 void createOrder(SFIX_Pair input[8], char *qty, char *price) {
   /*#region*/
   int i = 0;
@@ -37,13 +39,13 @@ int main() {
   // =========================================================================="
   char acknowledge[83];
   SFIX_acknowledge(acknowledge);
-  printf("=== acknowledge \n%s\n\n",acknowledge);
+  printf("=== acknowledge \n%s\n\n", acknowledge);
 
   // 🧰 Compose unknown message
   // =========================================================================="
   char unknown[83];
   SFIX_acknowledge(unknown);
-  printf("=== unknown \n%s\n\n",unknown);
+  printf("=== unknown \n%s\n\n", unknown);
 
   // 🧰 Pretty print message
   // =========================================================================="
@@ -52,32 +54,21 @@ int main() {
 
   // 🧰 Compose list message
   // =========================================================================="
-  SFIX_Pair orders[8] = {0};
-  createOrder(&orders[0], "10", "1.25");
-  createOrder(&orders[8], "5", "1.5");
-  int len = sizeof(orders) / sizeof(orders[0]);
-  int listSize = SFIX_estimateMessageSize(orders, len * 2);
+  int size = 2;
+  int listSize = SFIX_estimateMessageSize(size * PROPERTY_LENGTH);
   char list[listSize];
   memset(list, 0, listSize);
-  SFIX_composeInnerMessage(list, 2, 8, orders);
-
-  SFIX_Pair pairs[] = {
-      {SFIX_Tag_list_length, "2"},
-      {SFIX_Tag_List, list},
-  };
-
-  int pairsLength = sizeof(pairs) / sizeof(pairs[0]);
-  int msgSize = SFIX_estimateMessageSize(pairs, pairsLength);
-  char msg[msgSize];
-  memset(msg, 0, msgSize);
-  SFIX_compose(msg, 'O', pairs, pairsLength);
-  printf("\n=== list message \n%s\n",msg);
+  for (int i = 0; i < size; i++) {
+    SFIX_Pair orders[PROPERTY_LENGTH] = {0};
+    createOrder(&orders[0], "10", "1.25");
+    SFIX_compose(list, 'O', orders, PROPERTY_LENGTH);
+  }
+  printf("\n=== list message \n%s\n",list);
 
   // 🧰 parse list message
   // =========================================================================="
-  int size = SFIX_isList(msg);
   SFIX_KeyValue *n = calloc(0,sizeof(SFIX_KeyValue) * 256 * size);
-  SFIX_parse(msg, n);
+  SFIX_parse(list, n);
   printOrderList(n, size);
   free(n);
 }
