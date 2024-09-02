@@ -38,7 +38,7 @@ int SFIX_estimateMessageSize(int pairs_length);
 int SFIX_compose(char out[], char type, SFIX_Pair pairs[], int pairsLength);
 
 /**
- * Create a message
+ * Retrieve number of sub messages contained into a SFIX message
  *   @param message      An SFIX message
  *   @return             Length of the message list
  */
@@ -50,7 +50,7 @@ int SFIX_listLength(char *message);
  *   @param out          Structure to store the output
  *   @return             Error code
  */
-int SFIX_parse(char *message, SFIX_KeyValue *out);
+int SFIX_parse(char *message, SFIX_KeyValue out[]);
 
 /**
  * Pretty print a SFIX message
@@ -65,6 +65,7 @@ void SFIX_print(char *message);
  *   @return             Length of the message
  */
 int SFIX_acknowledge(char out[SFIX_MSG_SIZE(0)]);
+
 /**
  * Create an unknown type message
  *   @param out          addrese where to write the messag
