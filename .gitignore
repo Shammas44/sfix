@@ -1,0 +1,14 @@
+.cache
+*.o
+core
+bin/*
+compile_commands.json
+log.txt
+lib
+__pycache__
+*.egg-info/
+venv/
+.venv
+*.js
+*.wasm
+emsdk

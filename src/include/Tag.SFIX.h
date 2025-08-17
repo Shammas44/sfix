@@ -1,0 +1,595 @@
+#ifndef TAG_SFIX_H
+#define TAG_SFIX_H
+
+#include <time.h>
+typedef enum {
+  // === HEADER START AT 0
+  SFIX_Tag_Protocol_version = 8,
+  SFIX_Tag_Body_length = 9,
+  SFIX_Tag_Checksum = 10,
+  SFIX_Tag_Client_order_id = 11,
+  SFIX_Tag_Timestamp = 12,
+  SFIX_Tag_list_length = 20,
+  SFIX_Tag_List = 21,
+  SFIX_Tag_Message_type = 35,
+  // === BODY START AT 36
+  SFIX_Tag_Status = 36,
+  SFIX_Tag_Description = 37,
+  SFIX_Tag_Quantity = 38,
+  SFIX_Tag_Price = 44,
+  SFIX_Tag_Order_type = 45,
+  SFIX_Tag_Order_status = 46,
+  SFIX_Tag_Sender_comp_id = 49,
+  SFIX_Tag_Side = 54,
+  SFIX_Tag_Symbol = 55,
+  SFIX_Tag_Target_comp_id = 56,
+  SFIX_Tag_Time_in_force = 59,
+  SFIX_Tag_Transaction_time = 60,
+  SFIX_Tag_Date = 61,
+  SFIX_Tag_Time = 62,
+  SFIX_Tag_Open = 63,
+  SFIX_Tag_High = 64,
+  SFIX_Tag_Low = 65,
+  SFIX_Tag_Close = 66,
+  SFIX_Tag_Up_volume = 67,
+  SFIX_Tag_Down_volume = 69,
+  SFIX_Tag_Total_volume = 70,
+  SFIX_Tag_Up_ticks = 71,
+  SFIX_Tag_Down_ticks = 72,
+  SFIX_Tag_Total_ticks = 73,
+  SFIX_Tag_Capital = 74,
+  SFIX_Tag_Market_position = 75,
+  SFIX_Tag_Equity = 76,
+  SFIX_Tag_Last_price = 77,
+  SFIX_Tag_Strategy = 78,
+  SFIX_Tag_Spread = 79,
+  SFIX_Tag_Number_of_trades = 80,
+  SFIX_Tag_Broker_commision_dpm = 81,
+} SFIX_Tag;
+
+static char *SFIX_Tag_Labels[] = {
+    "",                     // 0
+    "",                     // 1
+    "",                     // 2
+    "",                     // 3
+    "",                     // 4
+    "",                     // 5
+    "",                     // 6
+    "",                     // 7
+    "Protocol version",     // 8
+    "Body length",          // 9
+    "Checksum",             // 10
+    "Client order id",      // 11
+    "Timestamp",            // 12
+    "",                     // 13
+    "",                     // 14
+    "",                     // 15
+    "",                     // 16
+    "",                     // 17
+    "",                     // 18
+    "",                     // 19
+    "list length",          // 20
+    "List",                 // 21
+    "",                     // 22
+    "",                     // 23
+    "",                     // 24
+    "",                     // 25
+    "",                     // 26
+    "",                     // 27
+    "",                     // 28
+    "",                     // 29
+    "",                     // 30
+    "",                     // 31
+    "",                     // 32
+    "",                     // 33
+    "",                     // 34
+    "Message type",         // 35
+    "Status",               // 36
+    "Description",          // 37
+    "Quantity",             // 38
+    "",                     // 39
+    "",                     // 40
+    "",                     // 41
+    "",                     // 42
+    "",                     // 43
+    "Price",                // 44
+    "Order type",           // 45
+    "Order status",         // 46
+    "",                     // 47
+    "",                     // 48
+    "Sender comp id",       // 49
+    "",                     // 50
+    "",                     // 51
+    "",                     // 52
+    "",                     // 53
+    "Side",                 // 54
+    "Symbol",               // 55
+    "Target comp id",       // 56
+    "",                     // 57
+    "",                     // 58
+    "Time in force",        // 59
+    "Transaction time",     // 60
+    "Date",                 // 61
+    "Time",                 // 62
+    "Open",                 // 63
+    "High",                 // 64
+    "Low",                  // 65
+    "Close",                // 66
+    "Up volume",            // 67
+    "",                     // 68
+    "Down volume",          // 69
+    "Total volume",         // 70
+    "Up ticks",             // 71
+    "Down ticks",           // 72
+    "Total ticks",          // 73
+    "Capital",              // 74
+    "Market position",      // 75
+    "Equity",               // 76
+    "Last price",           // 77
+    "Strategy",             // 78
+    "Spread",               // 79
+    "Number of trades",     // 80
+    "Broker commision dpm", // 81
+    "",                     // 82
+    "",                     // 83
+    "",                     // 84
+    "",                     // 85
+    "",                     // 86
+    "",                     // 87
+    "",                     // 88
+    "",                     // 89
+    "",                     // 90
+    "",                     // 91
+    "",                     // 92
+    "",                     // 93
+    "",                     // 94
+    "",                     // 95
+    "",                     // 96
+    "",                     // 97
+    "",                     // 98
+    "",                     // 99
+    "",                     // 100
+    "",                     // 101
+    "",                     // 102
+    "",                     // 103
+    "",                     // 104
+    "",                     // 105
+    "",                     // 106
+    "",                     // 107
+    "",                     // 108
+    "",                     // 109
+    "",                     // 110
+    "",                     // 111
+    "",                     // 112
+    "",                     // 113
+    "",                     // 114
+    "",                     // 115
+    "",                     // 116
+    "",                     // 117
+    "",                     // 118
+    "",                     // 119
+    "",                     // 120
+    "",                     // 121
+    "",                     // 122
+    "",                     // 123
+    "",                     // 124
+    "",                     // 125
+    "",                     // 126
+    "",                     // 127
+    "",                     // 128
+    "",                     // 129
+    "",                     // 130
+    "",                     // 131
+    "",                     // 132
+    "",                     // 133
+    "",                     // 134
+    "",                     // 135
+    "",                     // 136
+    "",                     // 137
+    "",                     // 138
+    "",                     // 139
+    "",                     // 140
+    "",                     // 141
+    "",                     // 142
+    "",                     // 143
+    "",                     // 144
+    "",                     // 145
+    "",                     // 146
+    "",                     // 147
+    "",                     // 148
+    "",                     // 149
+    "",                     // 150
+    "",                     // 151
+    "",                     // 152
+    "",                     // 153
+    "",                     // 154
+    "",                     // 155
+    "",                     // 156
+    "",                     // 157
+    "",                     // 158
+    "",                     // 159
+    "",                     // 160
+    "",                     // 161
+    "",                     // 162
+    "",                     // 163
+    "",                     // 164
+    "",                     // 165
+    "",                     // 166
+    "",                     // 167
+    "",                     // 168
+    "",                     // 169
+    "",                     // 170
+    "",                     // 171
+    "",                     // 172
+    "",                     // 173
+    "",                     // 174
+    "",                     // 175
+    "",                     // 176
+    "",                     // 177
+    "",                     // 178
+    "",                     // 179
+    "",                     // 180
+    "",                     // 181
+    "",                     // 182
+    "",                     // 183
+    "",                     // 184
+    "",                     // 185
+    "",                     // 186
+    "",                     // 187
+    "",                     // 188
+    "",                     // 189
+    "",                     // 190
+    "",                     // 191
+    "",                     // 192
+    "",                     // 193
+    "",                     // 194
+    "",                     // 195
+    "",                     // 196
+    "",                     // 197
+    "",                     // 198
+    "",                     // 199
+    "",                     // 200
+    "",                     // 201
+    "",                     // 202
+    "",                     // 203
+    "",                     // 204
+    "",                     // 205
+    "",                     // 206
+    "",                     // 207
+    "",                     // 208
+    "",                     // 209
+    "",                     // 210
+    "",                     // 211
+    "",                     // 212
+    "",                     // 213
+    "",                     // 214
+    "",                     // 215
+    "",                     // 216
+    "",                     // 217
+    "",                     // 218
+    "",                     // 219
+    "",                     // 220
+    "",                     // 221
+    "",                     // 222
+    "",                     // 223
+    "",                     // 224
+    "",                     // 225
+    "",                     // 226
+    "",                     // 227
+    "",                     // 228
+    "",                     // 229
+    "",                     // 230
+    "",                     // 231
+    "",                     // 232
+    "",                     // 233
+    "",                     // 234
+    "",                     // 235
+    "",                     // 236
+    "",                     // 237
+    "",                     // 238
+    "",                     // 239
+    "",                     // 240
+    "",                     // 241
+    "",                     // 242
+    "",                     // 243
+    "",                     // 244
+    "",                     // 245
+    "",                     // 246
+    "",                     // 247
+    "",                     // 248
+    "",                     // 249
+    "",                     // 250
+    "",                     // 251
+    "",                     // 252
+    "",                     // 253
+    "",                     // 254
+    "",                     // 255
+};
+
+#define SFIX_LABEL(index)                                                      \
+  ({                                                                           \
+    char *_key = SFIX_Tag_Labels[index];                                       \
+    _key;                                                                      \
+  })
+
+static const char **SFIX_Enum_Labels[] = {
+    NULL, // 0
+    NULL, // 1
+    NULL, // 2
+    NULL, // 3
+    NULL, // 4
+    NULL, // 5
+    NULL, // 6
+    NULL, // 7
+    NULL, // 8
+    NULL, // 9
+    NULL, // 10
+    NULL, // 11
+    NULL, // 12
+    NULL, // 13
+    NULL, // 14
+    NULL, // 15
+    NULL, // 16
+    NULL, // 17
+    NULL, // 18
+    NULL, // 19
+    NULL, // 20
+    NULL, // 21
+    NULL, // 22
+    NULL, // 23
+    NULL, // 24
+    NULL, // 25
+    NULL, // 26
+    NULL, // 27
+    NULL, // 28
+    NULL, // 29
+    NULL, // 30
+    NULL, // 31
+    NULL, // 32
+    NULL, // 33
+    NULL, // 34
+    NULL, // 35
+    NULL, // 36
+    NULL, // 37
+    NULL, // 38
+    NULL, // 39
+    NULL, // 40
+    NULL, // 41
+    NULL, // 42
+    NULL, // 43
+    NULL, // 44
+    (const char *[]){
+        // type 45
+        "MARKET",
+        "LIMIT",
+        "STOP LOSS",
+        NULL
+    },
+    (const char *[]){
+        // status 46
+        "CANCELLED",
+        "REJECTED",
+        "PENDING",
+        "EXECUTED",
+        NULL
+    },
+    NULL, // 47
+    NULL, // 48
+    NULL, // 49
+    NULL, // 50
+    NULL, // 51
+    NULL, // 52
+    NULL, // 53
+    (const char *[]){
+        // type 54
+        "NONE",
+        "BUY",
+        "SELL",
+        NULL
+    },
+    NULL, // 55
+    NULL, // 56
+    NULL, // 57
+    NULL, // 58
+    NULL, // 59
+    NULL, // 60
+    NULL, // 61
+    NULL, // 62
+    NULL, // 63
+    NULL, // 64
+    NULL, // 65
+    NULL, // 66
+    NULL, // 67
+    NULL, // 68
+    NULL, // 69
+    NULL, // 70
+    NULL, // 71
+    NULL, // 72
+    NULL, // 73
+    NULL, // 74
+    NULL, // 75
+    NULL, // 76
+    NULL, // 77
+    NULL, // 78
+    NULL, // 79
+    NULL, // 80
+    NULL, // 81
+    NULL, // 82
+    NULL, // 83
+    NULL, // 84
+    NULL, // 85
+    NULL, // 86
+    NULL, // 87
+    NULL, // 88
+    NULL, // 89
+    NULL, // 90
+    NULL, // 91
+    NULL, // 92
+    NULL, // 93
+    NULL, // 94
+    NULL, // 95
+    NULL, // 96
+    NULL, // 97
+    NULL, // 98
+    NULL, // 99
+    NULL, // 100
+    NULL, // 101
+    NULL, // 102
+    NULL, // 103
+    NULL, // 104
+    NULL, // 105
+    NULL, // 106
+    NULL, // 107
+    NULL, // 108
+    NULL, // 109
+    NULL, // 110
+    NULL, // 111
+    NULL, // 112
+    NULL, // 113
+    NULL, // 114
+    NULL, // 115
+    NULL, // 116
+    NULL, // 117
+    NULL, // 118
+    NULL, // 119
+    NULL, // 120
+    NULL, // 121
+    NULL, // 122
+    NULL, // 123
+    NULL, // 124
+    NULL, // 125
+    NULL, // 126
+    NULL, // 127
+    NULL, // 128
+    NULL, // 129
+    NULL, // 130
+    NULL, // 131
+    NULL, // 132
+    NULL, // 133
+    NULL, // 134
+    NULL, // 135
+    NULL, // 136
+    NULL, // 137
+    NULL, // 138
+    NULL, // 139
+    NULL, // 140
+    NULL, // 141
+    NULL, // 142
+    NULL, // 143
+    NULL, // 144
+    NULL, // 145
+    NULL, // 146
+    NULL, // 147
+    NULL, // 148
+    NULL, // 149
+    NULL, // 150
+    NULL, // 151
+    NULL, // 152
+    NULL, // 153
+    NULL, // 154
+    NULL, // 155
+    NULL, // 156
+    NULL, // 157
+    NULL, // 158
+    NULL, // 159
+    NULL, // 160
+    NULL, // 161
+    NULL, // 162
+    NULL, // 163
+    NULL, // 164
+    NULL, // 165
+    NULL, // 166
+    NULL, // 167
+    NULL, // 168
+    NULL, // 169
+    NULL, // 170
+    NULL, // 171
+    NULL, // 172
+    NULL, // 173
+    NULL, // 174
+    NULL, // 175
+    NULL, // 176
+    NULL, // 177
+    NULL, // 178
+    NULL, // 179
+    NULL, // 180
+    NULL, // 181
+    NULL, // 182
+    NULL, // 183
+    NULL, // 184
+    NULL, // 185
+    NULL, // 186
+    NULL, // 187
+    NULL, // 188
+    NULL, // 189
+    NULL, // 190
+    NULL, // 191
+    NULL, // 192
+    NULL, // 193
+    NULL, // 194
+    NULL, // 195
+    NULL, // 196
+    NULL, // 197
+    NULL, // 198
+    NULL, // 199
+    NULL, // 200
+    NULL, // 201
+    NULL, // 202
+    NULL, // 203
+    NULL, // 204
+    NULL, // 205
+    NULL, // 206
+    NULL, // 207
+    NULL, // 208
+    NULL, // 209
+    NULL, // 210
+    NULL, // 211
+    NULL, // 212
+    NULL, // 213
+    NULL, // 214
+    NULL, // 215
+    NULL, // 216
+    NULL, // 217
+    NULL, // 218
+    NULL, // 219
+    NULL, // 220
+    NULL, // 221
+    NULL, // 222
+    NULL, // 223
+    NULL, // 224
+    NULL, // 225
+    NULL, // 226
+    NULL, // 227
+    NULL, // 228
+    NULL, // 229
+    NULL, // 230
+    NULL, // 231
+    NULL, // 232
+    NULL, // 233
+    NULL, // 234
+    NULL, // 235
+    NULL, // 236
+    NULL, // 237
+    NULL, // 238
+    NULL, // 239
+    NULL, // 240
+    NULL, // 241
+    NULL, // 242
+    NULL, // 243
+    NULL, // 244
+    NULL, // 245
+    NULL, // 246
+    NULL, // 247
+    NULL, // 248
+    NULL, // 249
+    NULL, // 250
+    NULL, // 251
+    NULL, // 252
+    NULL, // 253
+    NULL, // 254
+    NULL, // 255
+};
+
+#define SFIX_ENUM(index) (SFIX_Enum_Labels[index])
+
+#endif

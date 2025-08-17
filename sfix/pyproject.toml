@@ -1,0 +1,37 @@
+# This section defines the build backend. For setuptools, it's standard.
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# This is the core project metadata, based on PEP 621
+[project]
+name = "sfix" # This is the name your package will be known by on PyPI and in pip list.
+              # It's also the name people will typically use in import statements IF
+              # your package's source folder (e.g., 'sfix/' or 'src/sfix/') matches this name.
+version = "0.1.0" # Start with a sensible version
+description = "A comprehensive SFIX message parsing and validation library."
+readme = "README.md"
+requires-python = ">=3.8" # Minimum Python version required
+license = { text = "MIT" } # Or { file = "LICENSE" } if you have a LICENSE file
+keywords = ["sfix", "trading", "protocol", "parser"]
+authors = [
+  { name = "Your Name", email = "your.email@example.com" },
+]
+classifiers = [ # Standard PyPI classifiers (optional but good)
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# Define project dependencies here. These are installed when someone installs your package.
+dependencies = [
+    # Example: if your package depends on 'requests'
+    # "requests>=2.20",
+]
+
+# This section is specific to setuptools (the tool. prefix is for build-backend specific config)
+[tool.setuptools.packages.find]
+where = ["src"] # This tells setuptools to look for Python packages inside the 'src' directory.
+                 # If you used a 'flat' layout (sfix_package/ at the root), you'd use where=["."]
